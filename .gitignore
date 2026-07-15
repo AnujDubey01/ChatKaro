@@ -1,0 +1,92 @@
+# ========================
+# Dependencies
+# ========================
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.staging
+.env.production
+.env.production.local
+
+# ========================
+# Build Outputs
+# ========================
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ========================
+# Runtime & Process
+# ========================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ========================
+# Coverage & Testing
+# ========================
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+playwright-report/
+
+# ========================
+# OS & Editor
+# ========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ========================
+# Package Manager Locks
+# (keep only one, remove others)
+# ========================
+# Uncomment if not using npm:
+# package-lock.json
+
+# ========================
+# Misc
+# ========================
+*.tgz
+*.zip
+*.tar.gz
+.eslintcache
+.stylelintcache
+.temp/
+.tmp/
