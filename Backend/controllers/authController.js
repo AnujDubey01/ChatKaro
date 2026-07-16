@@ -1,4 +1,5 @@
 const User = require("../models/user.model.js");
+const jwt = require("jsonwebtoken");
 // const User = require("../models/user.model");
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -135,10 +136,112 @@ const loginUser = async (req, res) => {
     }
 }
 
+const logoutUser = async (req,res) => {
+  try {
+      await User.findOneAndUpdate(
+        req.user.id,
+        {
+           $unset: {
+                    refreshToken: 1
+                }
+        },
+        {
+            new: true
+        }
+      );
+      
+       const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict"
+        };
 
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json({
+                success: true,
+                message: "User logged out successfully"
+            });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+const refreshAccessToken = async (req, res) => {
+  try {
+     const incomingRefreshToken = req.cookies?.refreshToken;
+
+        if (!incomingRefreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized Request"
+            });
+        }
+        // 2. Verify Refresh Token
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        // 3. Find User
+        const user = await User.findById(decodedToken.id);
+         if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid Refresh Token"
+            });
+        }
+        // 4. Compare Refresh Token with Database
+        if (incomingRefreshToken !== user.refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Refresh Token is Expired or Used"
+            });
+        }
+
+        // 5. Generate New Tokens
+        const { accessToken, refreshToken } =
+            await generateAccessAndRefreshTokens(user._id);
+
+        // 6. Cookie Options
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        };
+
+         return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json({
+                success: true,
+                message: "Access Token Refreshed Successfully",
+                accessToken
+            });
+
+    } catch (error) {
+
+        return res.status(401).json({
+            success: false,
+            message: error.message || "Invalid Refresh Token"
+        });
+
+    }
+};
 module.exports = {
     
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    refreshAccessToken
 
 }
