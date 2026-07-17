@@ -24,7 +24,7 @@ const verifyJWT = async (req, res, next) => {
         );
 
         // 4. Find User
-        const user = await User.findById(decodedToken.id)
+        const user = await User.findById(decodedToken._id)
             .select("-password -refreshToken");
 
         // 5. Check if User Exists
