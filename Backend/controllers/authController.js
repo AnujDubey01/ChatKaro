@@ -2,6 +2,20 @@ const User = require("../models/user.model.js");
 const jwt = require("jsonwebtoken");
 // const User = require("../models/user.model");
 
+const accessTokenCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 15 * 60 * 1000, // 15 minutes
+};
+
+const refreshTokenCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
 const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
 
@@ -55,25 +69,20 @@ const registerUser = async (req, res) => {
       "-password -refreshToken",
     );
 
-    const options = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    };
 
     return res
-      .status(201)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json({
+    .status(201)
+    .cookie("accessToken", accessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
+    .json({
         success: true,
         message: "User Registered Successfully",
         user: loggedInUser,
-      });
+    });
+    
   } catch (error) {
     return res.status(500).json({
       success: false,
-
       message: error.message,
     });
   }
@@ -112,21 +121,15 @@ const loginUser = async (req, res) => {
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-    const options = {
-        httpOnly:true,
-        secure:process.env.NODE_ENV==="production",
-        sameSite:"strict"
-    };
 
-    return res
+   return res
     .status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
+    .cookie("accessToken", accessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
     .json({
-
-        success:true,
-        user:loggedInUser,
-        message:"Login Successful"
+        success: true,
+        user: loggedInUser,
+        message: "Login Successful"
     });
     } catch (error) {
         return res.status(500).json({
@@ -139,14 +142,11 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req,res) => {
   try {
       await User.findOneAndUpdate(
-        req.user.id,
+        req.user._id,
         {
            $unset: {
                     refreshToken: 1
                 }
-        },
-        {
-            new: true
         }
       );
       
@@ -218,15 +218,15 @@ const refreshAccessToken = async (req, res) => {
             sameSite: "strict",
         };
 
-         return res
-            .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
-            .json({
-                success: true,
-                message: "Access Token Refreshed Successfully",
-                accessToken
-            });
+        return res
+    .status(200)
+    .cookie("accessToken", accessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
+    .json({
+        success: true,
+        message: "Access Token Refreshed Successfully",
+        accessToken
+    });
 
     } catch (error) {
 
