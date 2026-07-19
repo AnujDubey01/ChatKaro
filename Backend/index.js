@@ -6,6 +6,7 @@ const connectDB = require("./config/dbconnect");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 
 const app = express();
@@ -18,6 +19,8 @@ app.use(cors({
     credentials:true
 }));
 app.use("/api/v1/auth",authRoutes);
+app.use("/api/v1/user",userRoutes);
+
 
 
 const port = process.env.PORT || 8000;
